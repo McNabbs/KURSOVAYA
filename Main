@@ -1,0 +1,530 @@
+#include <png.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <setjmp.h>
+#include <zlib.h>
+#include <bits/stdc++.h>
+
+#define IMAGE_WIDTH		320
+#define IMAGE_HEIGHT	240
+#define IMAGE_BPP		10
+using namespace std;
+
+int  b = 200,rc = 254,gc = 39,bc = 12,ry = 0,gy = 127,by = 0,w = 400,s = 400,e = 50, x = 1,y = 0;
+string p = "";
+int p1=50,p2=50,p3=50,p4=50;
+
+int col=0;
+
+
+vector<vector<long long>> v;
+
+png_structp png_ptr;
+png_infop info_ptr;
+
+png_bytepp rows;
+
+long long getRandomNumber(
+        long long min,
+        long long max){
+    max=max-min-1;
+    return ((rand()%(int)(((max) + 1)-(min)))+ (min));
+}
+
+void png_setpixel(int x,int y,png_bytepp dest, int r, int g, int b)
+{
+    //perror("setpixel");
+    dest[y][x*3] = r;
+    dest[y][x*3+1] = g;
+    dest[y][x*3+2] = b;
+}
+//void png_setpixel(int x,int y,int rgbcolor,png_bytepp dest)
+//{
+//    dest[y][x*3] = (rgbcolor>>16)&0xFF;
+//    dest[y][x*3+1] = (rgbcolor>>8)&0xFF;
+//    dest[y][x*3+2] = rgbcolor&0xFF;
+//}
+
+void create_image()
+//void create_image()
+{
+
+    int i;
+
+    rows=(png_bytepp)malloc(sizeof(png_bytep)*IMAGE_WIDTH);
+    if(rows==NULL){
+        perror("malloc (rows)");
+        exit(1);
+    }
+
+    for(i=0; i<IMAGE_HEIGHT; i++){
+        rows[i]=(png_bytep)malloc(sizeof(png_byte)*IMAGE_WIDTH*IMAGE_BPP*3);
+        if(rows[i]==NULL){
+            perror("malloc (rows[i])");
+            exit(1);
+        }
+        memset(rows[i],0x0,sizeof(png_byte)*IMAGE_WIDTH*IMAGE_BPP*3);
+    }
+  //  png_setpixel(5,5,rows,55,55,55);
+    //------------------------------------------------------
+//    int i;
+//        /* ÓÏÚÄÁÅÍ ÍÁÓÓÉ× ÕËÁÚÁÔÅÌÅÊ ÓÔÒÏË ÉÚÏÂÒÁÖÅÎÉÑ */
+//    auto bbb = b;
+//    //perror("create");
+//    rows=(png_bytepp)malloc(sizeof(png_bytep)*bbb);
+//    if(rows==NULL){
+//        perror("malloc (rows)");
+//        exit(1);
+//    }
+//    /* óÏÚÄÁÅÍ ÓÔÒÏËÉ ÉÚÏÂÒÁÖÅÎÉÑ */
+//    for(i=0; i<IMAGE_HEIGHT; i++){
+//        rows[i]=(png_bytep)malloc(sizeof(png_byte)*w*IMAGE_BPP*3);
+//        if(rows[i]==NULL){
+//            perror("malloc (rows[i])");
+//            exit(1);
+//        }
+//        memset(rows[i],0x0,sizeof(png_byte)*w*IMAGE_BPP*3);
+
+//    }
+       /* òÉÓÕÅÍ ÍÁÌÉÎÏ×ÕÀ ÔÏÞËÕ */
+
+
+
+    for(int i=0;i<b/10;i++){
+        for(int j=0;j<w/10;j++){
+        //    if(v[i][j]==-1){
+          //      png_setpixel(j,i,rows,255,255,255);
+           /// }
+            if(v[i][j]==1){
+                png_setpixel(i,j,rows,rc,gc,bc);
+                continue;
+            }
+            if(v[i][j]==0){
+                png_setpixel(i,j,rows,ry,gy,by);
+            }
+        }
+    }
+    col++;
+
+}
+
+int main(int argc, char *argv[])
+{
+    //perror("1");
+    if (argc != 1){
+        for(int i=1;i<argc;i+=2){
+            stringstream convert(argv[i]);
+            string str;
+            convert >> str;
+            if(str == "-b" || str=="--box"){
+                b = atoi(argv[i+1]);
+                b*=10;
+            }
+            if(str == "-с"|| str=="--color1"){
+                ry = atoi(argv[i+1]);
+                gy = atoi(argv[i+2]);
+                by = atoi(argv[i+3]);
+            }
+            if(str=="-y"|| str=="--color2"){
+                rc = atoi(argv[i+1]);
+                gc = atoi(argv[i+2]);
+                bc = atoi(argv[i+3]);
+            }
+
+            if(str=="-w" || str=="--width"){
+                w = atoi(argv[i+1]);
+                w*=10;
+            }
+
+            if(str=="-s"|| str=="--steps"){
+                s = atoi(argv[i+1]);
+            }
+            if(str=="-e"|| str=="--each"){
+                e = atoi(argv[i+1]);
+            }
+            if(str=="-p"|| str=="--path"){
+                p = argv[i+1];
+            }
+            if(str=="-h"|| str=="--help"){
+                cout<<("This is program for simulating the predador-prey system using markov systems. \n"
+                   "Generation options if: \n"
+                     "-b [ --box ]  Box size for each pixel (e.g. -b 20) \n"
+                     "-c [ --color1 ]   RGB color for predator (e.g. -c 254 39 12) \n"
+                     "-y [ --color2 ]   RGB color for prey (e.g. -y 0 127 0) \n"
+                     "-w [ --width ]   Image size with box size: w x b (e.g. -w 40) \n"
+                     "-s [ --steps ]   Number of steps/iterations, default is 100 (e.g. -s 400) \n"
+                     "-e [ --each ]   Save each X to file, must be less than number of steps, default is 10 (e.g. -e 50) \n"
+                     "-p [ --path ]   Path to save PNG files (e.g. -p frames) \n"
+                     "-h [ --help ]   Show help (e.g. -h)");
+                    return 1;
+            }
+
+        }
+    }
+    // -b 20 -c 254 39 12 -y 0 127 0 -w 40 -s 400 -e 50 -p D:\build-MODEL-Desktop_Qt_5_12_9_MinGW_32_bit-Release\release
+
+//    int k = 1;
+    string name;
+
+    long long n = b*w;
+   // vector<vector<long long>>v(b,vector<long long>(w));
+    v.resize(b);
+
+    int variant;
+  variant = getRandomNumber(1,4);
+
+
+    for(int i=0;i<b;i++){
+        v[i].resize(w);
+        for(int j=0;j<w;j++){
+
+            v[i][j]=-1;
+        }
+    }
+    int colX=n/3,colY=colX/2;
+    while(colX--){
+        int xX=3,yX=3;
+        yX = 1 + rand() % (w-2);
+        xX = 1 + rand() % (b-2);
+        v[xX][yX]=1;
+
+    }
+    while(colY--){
+        int xX=3,yX=3;
+        yX = 1 + rand() % (w-2);
+        xX = 1 + rand() % (b-2);
+
+        v[xX][yX]=0;
+    }
+
+    int step = 1;
+
+    while(s--){
+
+        if((step%e==0)||(step==1)){
+            name = p + to_string(step) + ".png";
+            //тут будет вывод изображения
+            const char *_fn;
+            _fn = name.c_str();
+            perror(_fn);
+            FILE *fp = fopen(_fn,"wb");
+            if(!fp){
+                perror("file not open");
+                return 1;
+            }
+            //perror("file");
+            //***********************************************************************
+            //***********************************************************************
+//            png_ptr = png_create_write_struct(
+//                        PNG_LIBPNG_VER_STRING, NULL, NULL, NULL
+//                        );
+//            if(!png_ptr){
+//                perror("create_write_struct failed");
+//                fprintf(stderr,"create_write_struct failed\n");
+//                return 1;
+//            }
+//            //perror("file1");
+//            info_ptr = png_create_info_struct(png_ptr);
+//            if (!info_ptr){
+//                perror("info");
+//                png_destroy_write_struct(&png_ptr, (png_infopp)nullptr);
+//                return 1;
+//            }
+//            //perror("file2");
+//            if (setjmp(png_jmpbuf(png_ptr))){
+//                perror("SetJmp");
+//                return 1;
+//            }
+//            perror("file3");
+
+//            png_set_IHDR(png_ptr, info_ptr, w, w*b,
+//                         8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+//                         PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+//            //perror("file4.1");
+//            //png_write_info(png_ptr, info_ptr);
+//            //perror("file4");
+//            //png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
+
+
+//            create_image();
+
+//            png_init_io(png_ptr, fp);
+//            png_set_rows(png_ptr,info_ptr,rows);
+
+//            png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+////            png_write_image(png_ptr, rows);
+////            png_write_end(png_ptr, NULL);
+
+//            for (int i = 0; i < 240; i++){
+//                free(rows[i]);
+//            }
+//            free(rows);
+
+//            fclose(fp);
+
+//            png_destroy_write_struct(&png_ptr, &info_ptr);
+            //***********************************************************************
+            //*********************************************************************
+
+
+            png_ptr = png_create_write_struct(
+                        PNG_LIBPNG_VER_STRING, nullptr, nullptr,nullptr
+                        );
+            if(!png_ptr){
+                fprintf(stderr,"create_write_struct failed\n");
+                return 1;
+            }
+
+            info_ptr = png_create_info_struct(png_ptr);
+            if (!info_ptr){
+                png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+                return 1;
+            }
+
+            png_init_io(png_ptr, fp);
+
+            png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
+
+            png_set_IHDR(png_ptr, info_ptr, 320, 240,
+                         8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+                         PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+             create_image();
+
+            png_set_rows(png_ptr,info_ptr,rows);
+
+            png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+            fclose(fp);
+        }
+
+
+        //идем по массиву
+        for(int i=0;i<(b/10);i++){
+            for(int j=0;j<(w/10);j++){
+                //проверяем текущее значение
+                if(v[i][j]==0){ //хищник
+                    //наличие жертвы
+
+                    //Sprawa
+                    if(j!=(w/10)-1){
+                        if(v[i][j+1]==1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p2){
+                                v[i][j+1]=0;
+                                continue;
+                            }
+
+                        }
+                    }
+                    //Snzu
+                    if(i!=(b/10)-1){
+                        if(v[i+1][j]==1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p2){
+                                v[i+1][j]=0;
+                                continue;
+                            }
+
+                        }
+                    }
+                    //Slewa
+                    if(j!=0){
+                        if(v[i][j-1]==1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p2){
+                                v[i][j-1]=0;
+                                continue;
+                            }
+
+                        }
+                    }
+                    //Swerhu
+                    if(i!=0){
+                        if(v[i-1][j]==1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p2){
+                                v[i-1][j]=0;
+                                continue;
+                            }
+
+                        }
+                    }
+
+                    int p0 = getRandomNumber(1,100);
+                    if(p0<=p3){
+                        v[i][j]=-1;
+                    }
+                    else{
+                        int Manewr = getRandomNumber(1,4);
+                       // int Manewr = 1;
+                        if(Manewr==1){
+                            if(j!=(w/10)-1){
+                                v[i][j]=-1;
+                                 v[i][j+1]=0;
+                            }
+                            continue;
+                        }
+                        else if(Manewr==2){
+                            if((i!=(b/10)-1)&&(v[i+1][j]==-1)){
+                                v[i+1][j]=0;
+                                v[i][j]=-1;
+                            }
+                            continue;
+                        }
+                        else if(Manewr==3){
+                            if((j!=0)&&(v[i][j-1]==-1)){
+                                v[i][j-1]=0;
+                                v[i][j]=-1;
+                            }
+                            continue;
+                        }
+                        else if(Manewr==4){
+                            if((i!=0)&&(v[i-1][j]==-1)){
+                                v[i-1][j]=0;
+                                v[i][j]=-1;
+                            }
+                            continue;
+                        }
+                    }
+                }
+
+
+                //ZERTWA
+                if(v[i][j]==1){ //ZERTWA
+                    //наличие edi
+
+                    //Sprawa
+                    if(j!=(w/10)-1){
+                        if(v[i][j+1]==-1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p1){
+                                v[i][j+1]=1;
+                                continue;
+                            }
+
+                        }
+                    }
+                    //Snzu
+                    if(i!=(b/10)-1){
+                        if(v[i+1][j]==-1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p1){
+                                v[i+1][j]=1;
+                                continue;
+                            }
+
+                        }
+                    }
+                    //Slewa
+                    if(j!=0){
+                        if(v[i][j-1]==-1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p1){
+                                v[i][j-1]=1;
+                                continue;
+                            }
+
+                        }
+                    }
+                    //Swerhu
+                    if(i!=0){
+                        if(v[i-1][j]==-1){
+                            int p0 = getRandomNumber(1,100);
+                            if(p0<=p1){
+                                v[i-1][j]=1;
+                                continue;
+                            }
+
+                        }
+                    }
+
+                    int p0 = getRandomNumber(1,100);
+                    if(p0<=p4){
+                        v[i][j]=-1;
+                    }
+                    else{
+                        int Manewr = getRandomNumber(1,4);
+                       // int Manewr = 1;
+                        if(Manewr==1){
+                            if(j!=(w/10)-1){
+                                v[i][j]=-1;
+                                 v[i][j+1]=1;
+                            }
+                            continue;
+                        }
+                        else if(Manewr==2){
+                            if((i!=(b/10)-1)&&(v[i+1][j]==-1)){
+                                v[i+1][j]=1;
+                                v[i][j]=-1;
+                            }
+                            continue;
+                        }
+                        else if(Manewr==3){
+                            if((j!=0)&&(v[i][j-1]==-1)){
+                                v[i][j-1]=1;
+                                v[i][j]=-1;
+                            }
+                            continue;
+                        }
+                        else if(Manewr==4){
+                            if((i!=0)&&(v[i-1][j]==-1)){
+                                v[i-1][j]=1;
+                                v[i][j]=-1;
+                            }
+                            continue;
+                        }
+                    }
+                }
+             }
+        }
+
+        step++;
+
+    }//END
+
+    cout<<"Done! "<<col<<" frames are written";
+
+
+
+   // }
+
+
+//    FILE *fp = fopen("SSSSS1.png","wb");
+//    if(!fp){
+//        perror(""
+//               "");
+//        return 1;
+//    }
+
+//    png_ptr = png_create_write_struct(
+//        PNG_LIBPNG_VER_STRING, nullptr, nullptr,nullptr
+//    );
+//    if(!png_ptr){
+//        fprintf(stderr,"create_write_struct failed\n");
+//        return 1;
+//    }
+
+//    info_ptr = png_create_info_struct(png_ptr);
+//    if (!info_ptr){
+//        png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+//        return 1;
+//    }
+
+//    png_init_io(png_ptr, fp);
+
+//    png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
+
+//    png_set_IHDR(png_ptr, info_ptr, 320, 240,
+//        8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+//        PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+//    create_image();
+//    png_set_rows(png_ptr,info_ptr,rows);
+
+//    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+//    fclose(fp);
+
+
+
+}
